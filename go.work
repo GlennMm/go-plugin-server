@@ -2,7 +2,5 @@ go 1.21.0
 
 use (
 	.
-	./plugins/health
-	./plugins/auth
 	./plugins/todo
 )
