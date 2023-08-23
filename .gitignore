@@ -1,7 +1,7 @@
 .DS_Store
 *.[56789ao]
 *.a[56789o]
-# *.so
+*.so
 *.pyc
 ._*
 .nfs.*
