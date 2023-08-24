@@ -50,3 +50,6 @@ _testmain.go
 .vscode
 .ide
 .env
+.sqlite
+.sqlite3
+.db
