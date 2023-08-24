@@ -8,11 +8,11 @@ import (
 
 	"todo/models"
 
-	"xorm.io/xorm"
+	"gorm.io/gorm"
 )
 
 func NewTodo(w http.ResponseWriter, r *http.Request) {
-	db, ok := r.Context().Value("store").(*xorm.Engine)
+	db, ok := r.Context().Value("store").(*gorm.DB)
 	if !ok {
 		fmt.Println("Db is null")
 		errs := []string{"No database instace"}
@@ -30,7 +30,7 @@ func NewTodo(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	err = utils.MutateDb(db, &todo)
+	err = utils.DbInsert[models.Todo](db, &todo)
 	if err != nil {
 		fmt.Println(err)
 		errs := []string{err.Error()}

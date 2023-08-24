@@ -8,11 +8,11 @@ import (
 	"todo/models"
 
 	"github.com/gorilla/mux"
-	"xorm.io/xorm"
+	"gorm.io/gorm"
 )
 
 func ReadOneTodo(w http.ResponseWriter, r *http.Request) {
-	db, ok := r.Context().Value("store").(*xorm.Engine)
+	db, ok := r.Context().Value("store").(*gorm.DB)
 	if !ok {
 		fmt.Println("Db is null")
 	}
@@ -22,9 +22,9 @@ func ReadOneTodo(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 
 	var todo models.Todo
-	err := db.Where("id = ?", id).Find(todo)
-	if err != nil {
-		errs := []string{fmt.Sprintf("Todo with id %s was not found", id), err.Error()}
+	result := db.Where("id = ?", id).Find(&todo)
+	if result.Error != nil {
+		errs := []string{fmt.Sprintf("Todo with id %s was not found", id), result.Error.Error()}
 		utils.Respond[interface{}](w, nil, errs, http.StatusNotFound)
 		return
 	}
@@ -33,18 +33,17 @@ func ReadOneTodo(w http.ResponseWriter, r *http.Request) {
 }
 
 func ReadAllTodo(w http.ResponseWriter, r *http.Request) {
-	db, ok := r.Context().Value("store").(*xorm.Engine)
+	db, ok := r.Context().Value("store").(*gorm.DB)
 	if !ok {
 		fmt.Println("Db is null")
 	}
 	todos := []models.Todo{}
-	err := db.Find(todos)
-	if err != nil {
-		fmt.Println(err)
-		errs := []string{err.Error()}
+	result := db.Find(&todos)
+	if result.Error != nil {
+		fmt.Println(result.Error)
+		errs := []string{result.Error.Error()}
 		utils.Respond[interface{}](w, nil, errs, http.StatusNotFound)
 		return
-
 	}
 	errs := []string{}
 	utils.Respond[[]models.Todo](w, todos, errs, http.StatusOK)

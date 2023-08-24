@@ -15,23 +15,14 @@ import (
 	"web_api_engine/middlewares"
 
 	"github.com/gorilla/mux"
-	"xorm.io/xorm"
-
-	_ "github.com/lib/pq"
-)
-
-const (
-	DB_HOST     = "localhost"
-	DB_PORT     = 5432
-	DB_USER     = "glenn"
-	DB_PASSWORD = "glenn"
-	DB_NAME     = "sample-database"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 type Engine struct {
 	Router    *mux.Router
 	ApiRouter *mux.Router
-	DbEngine  *xorm.Engine
+	DbEngine  *gorm.DB
 	Ctx       context.Context
 }
 
@@ -65,9 +56,7 @@ func (e *Engine) Run() {
 
 func (e *Engine) init() error {
 	// FIX: get DB name from .env file
-	dbinfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
-	db_engine, err := xorm.NewEngine("postgres", dbinfo)
+	db_engine, err := gorm.Open(sqlite.Open("app_db.db"), &gorm.Config{})
 	if err != nil {
 		panic(err)
 		// return err
@@ -116,7 +105,7 @@ func (e *Engine) loadPlugins() error {
 			return err
 		}
 
-		Load.(func(*mux.Router, *xorm.Engine))(e.ApiRouter, e.DbEngine)
+		Load.(func(*mux.Router, *gorm.DB))(e.ApiRouter, e.DbEngine)
 
 	}
 	fmt.Printf("%d plugin(s) loaded.\n", len(files))

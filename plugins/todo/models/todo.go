@@ -1,12 +1,12 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+)
 
 type Todo struct {
-	Created     time.Time `xorm:"'created'"`
-	Updated     time.Time `xorm:"'updated'"`
-	Name        string    `xorm:"'name'"`
-	Description string    `xorm:"'description'"`
-	Id          int64     `xorm:"'id' pk autoincr"`
-	Done        bool      `xorm:"'done'"`
+	gorm.Model
+	Name        string `gorm:"name;index"`
+	Description string `gorm:"description"`
+	Done        bool   `gorm:"done"`
 }

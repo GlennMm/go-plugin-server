@@ -1,19 +1,29 @@
 package utils
 
-import "xorm.io/xorm"
+import (
+	"gorm.io/gorm"
+)
 
-func MutateDb[T interface{}](db *xorm.Engine, data *T) error {
-	session := db.NewSession()
-	defer session.Close()
-
-	if err := session.Begin(); err != nil {
-		// if returned then will rollback automatically
+func DbInsert[T interface{}](db *gorm.DB, data *T) error {
+	if err := db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&data).Error; err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
 		return err
 	}
+	return nil
+}
 
-	if _, err := session.InsertOne(&data); err != nil {
+func DbUpdate[T interface{}](db *gorm.DB, data *T) error {
+	if err := db.Transaction(func(tx *gorm.DB) error {
+		if err1 := tx.Save(&data).Error; err1 != nil {
+			return err1
+		}
+		return nil
+	}); err != nil {
 		return err
 	}
-
-	return session.Commit()
+	return nil
 }

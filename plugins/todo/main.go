@@ -10,7 +10,7 @@ import (
 	"todo/models"
 
 	"github.com/gorilla/mux"
-	"xorm.io/xorm"
+	"gorm.io/gorm"
 )
 
 type TodoPlugin struct {
@@ -18,7 +18,7 @@ type TodoPlugin struct {
 }
 
 // addMiddleWare implements interfaces.IPlugin.
-func (*TodoPlugin) addMiddleWare(r *mux.Router, db *xorm.Engine) error {
+func (*TodoPlugin) addMiddleWare(r *mux.Router, db *gorm.DB) error {
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := context.WithValue(r.Context(), "store", db)
@@ -29,8 +29,8 @@ func (*TodoPlugin) addMiddleWare(r *mux.Router, db *xorm.Engine) error {
 }
 
 // migrateModels implements interfaces.IPlugin.
-func (*TodoPlugin) migrateModels(db *xorm.Engine) error {
-	if err := db.Sync(new(models.Todo)); err != nil {
+func (*TodoPlugin) migrateModels(db *gorm.DB) error {
+	if err := db.AutoMigrate(&models.Todo{}); err != nil {
 		return err
 	}
 
@@ -38,7 +38,7 @@ func (*TodoPlugin) migrateModels(db *xorm.Engine) error {
 }
 
 // registerRoutes implements interfaces.IPlugin.
-func (p *TodoPlugin) registerRoutes(r *mux.Router, db *xorm.Engine) error {
+func (p *TodoPlugin) registerRoutes(r *mux.Router, db *gorm.DB) error {
 	router := r.PathPrefix(fmt.Sprintf("/" + p.Name)).Subrouter()
 
 	router.HandleFunc("", func(w http.ResponseWriter, _ *http.Request) {
@@ -58,7 +58,7 @@ func LoadRoutes(r *mux.Router) {
 	r.HandleFunc("/{id:[0-9]+}", handlers.UpdateTodo).Methods("PUT", "PATCH", "OPTIONS")
 }
 
-func (p *TodoPlugin) RegisterPlugin(r *mux.Router, db *xorm.Engine) error {
+func (p *TodoPlugin) RegisterPlugin(r *mux.Router, db *gorm.DB) error {
 	if err := p.migrateModels(db); err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func CreateTodoPlugin(Name string) *TodoPlugin {
 	}
 }
 
-func Load(router *mux.Router, db *xorm.Engine) {
+func Load(router *mux.Router, db *gorm.DB) {
 	plugin := CreateTodoPlugin("todo")
 	plugin.RegisterPlugin(router, db)
 }
