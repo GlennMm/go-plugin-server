@@ -55,8 +55,12 @@ func (e *Engine) Run() {
 }
 
 func (e *Engine) init() error {
-	// FIX: get DB name from .env file
-	db_engine, err := gorm.Open(sqlite.Open("app_db.db"), &gorm.Config{})
+	// DB_HOST := os.Getenv("DB_HOST")
+	// DB_PORT := os.Getenv("DB_PORT")
+	// DB_USER := os.Getenv("DB_USER")
+	// DB_PASSWD := os.Getenv("DB_PASSWD")
+	DB_NAME := os.Getenv("DB_NAME")
+	db_engine, err := gorm.Open(sqlite.Open(DB_NAME), &gorm.Config{})
 	if err != nil {
 		panic(err)
 		// return err
@@ -79,7 +83,10 @@ func (e *Engine) loadPlugins() error {
 		fmt.Println(err)
 		return err
 	}
-	files, err := filepath.Glob(filepath.Join(dir, "/modules/*.so"))
+
+	PLUGIN_PATH := os.Getenv("PLUGIN_PATH")
+
+	files, err := filepath.Glob(filepath.Join(dir, PLUGIN_PATH+"/*.so"))
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -117,8 +124,10 @@ func (e *Engine) startServer() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
+	PORT := os.Getenv("PORT")
+
 	srv := &http.Server{
-		Addr: "0.0.0.0:5000",
+		Addr: "0.0.0.0:" + PORT,
 		// Good practice to set timeouts to avoid Slowloris attacks.
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
